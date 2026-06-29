@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A beautiful weather dashboard with dynamic mountain landscape, real-time forecasts, and atmospheric effects.">
+  <title>checkyour Weather — Live Forecast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ============ DYNAMIC BACKGROUND ============ -->
+  <canvas id="sky-canvas"></canvas>
+
+  <div id="scene">
+    <div id="celestial-body">
+      <div id="sun"></div>
+      <div id="moon"></div>
+    </div>
+
+    <div id="clouds">
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+      <div class="cloud cloud-4"></div>
+      <div class="cloud cloud-5"></div>
+    </div>
+
+    <svg id="mountain-far" class="mountain-layer" viewBox="0 0 1440 400" preserveAspectRatio="none">
+      <path d="M0,400 L0,280 Q120,120 240,200 Q360,80 480,180 Q540,60 660,160 Q780,40 900,140 Q1020,60 1100,120 Q1200,30 1300,160 Q1380,100 1440,180 L1440,400 Z"/>
+    </svg>
+
+    <svg id="mountain-mid" class="mountain-layer" viewBox="0 0 1440 400" preserveAspectRatio="none">
+      <path d="M0,400 L0,300 Q100,180 200,260 Q320,100 440,220 Q500,80 620,200 Q700,40 800,160 Q900,60 1000,180 Q1100,100 1200,220 Q1300,120 1400,200 L1440,260 L1440,400 Z"/>
+      <path class="snow-cap" d="M320,100 Q360,90 400,130 Q380,110 360,115 Q340,105 320,100 Z"/>
+      <path class="snow-cap" d="M500,80 Q530,68 570,120 Q550,95 530,100 Q515,88 500,80 Z"/>
+      <path class="snow-cap" d="M700,40 Q740,28 790,100 Q770,70 750,78 Q730,55 700,40 Z"/>
+    </svg>
+
+    <svg id="mountain-near" class="mountain-layer" viewBox="0 0 1440 400" preserveAspectRatio="none">
+      <path d="M0,400 L0,340 Q60,240 160,300 Q250,160 380,260 Q460,120 580,240 Q660,80 760,200 Q840,100 940,220 Q1040,140 1140,260 Q1240,180 1340,280 L1440,320 L1440,400 Z"/>
+      <path class="snow-cap" d="M460,120 Q500,105 540,170 Q520,140 500,148 Q480,128 460,120 Z"/>
+      <path class="snow-cap" d="M660,80 Q710,60 760,150 Q740,110 720,120 Q695,95 660,80 Z"/>
+    </svg>
+
+    <div id="forest">
+      <svg id="treeline" viewBox="0 0 1440 200" preserveAspectRatio="none">
+        <path d="M0,200 L0,140 Q20,100 40,140 Q50,90 70,130 Q80,70 100,130 Q110,80 130,140 Q150,110 170,140 Q180,60 210,130 Q220,90 240,140 Q260,100 280,130 Q290,50 320,130 Q340,100 360,140 Q380,80 400,130 Q410,60 440,130 Q460,100 480,140 Q500,70 530,130 Q540,90 560,130 Q570,50 600,130 Q620,90 640,140 Q660,80 680,130 Q690,40 720,130 Q740,100 760,140 Q780,70 810,130 Q820,90 840,130 Q850,60 880,130 Q900,100 920,140 Q940,80 960,130 Q970,50 1000,130 Q1020,100 1040,140 Q1060,70 1090,130 Q1100,90 1120,130 Q1130,60 1160,130 Q1180,100 1200,140 Q1220,80 1240,130 Q1250,40 1280,130 Q1300,100 1320,140 Q1340,70 1370,130 Q1380,90 1400,130 Q1410,80 1440,140 L1440,200 Z"/>
+      </svg>
+    </div>
+
+    <div class="fog fog-1"></div>
+    <div class="fog fog-2"></div>
+    <div id="ground"></div>
+  </div>
+
+  <!-- Particle canvas (rain/snow/stars) -->
+  <canvas id="particle-canvas"></canvas>
+
+  <!-- ============ WEATHER UI ============ -->
+  <div id="app">
+
+    <!-- Top Bar -->
+    <header id="top-bar">
+      <div id="brand">
+        <svg id="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 21l4-12 4 12"/>
+          <path d="M2 21l5-16 5 16"/>
+          <path d="M12 21l5-16 5 16"/>
+        </svg>
+        <span>shubh</span>
+      </div>
+
+      <div id="search-container">
+        <div id="search-box">
+          <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input type="text" id="search-input" placeholder="Search city..." autocomplete="off" />
+          <button id="location-btn" title="Use my location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <circle cx="12" cy="12" r="3"/>
+              <path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
+            </svg>
+          </button>
+        </div>
+        <ul id="search-results"></ul>
+      </div>
+
+      <div id="unit-toggle">
+        <button id="unit-c" class="unit-btn active">°C</button>
+        <button id="unit-f" class="unit-btn">°F</button>
+      </div>
+    </header>
+
+    <!-- Loading State -->
+    <div id="loading-screen">
+      <div class="loader-ring"></div>
+      <p>Fetching weather data...</p>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-screen" class="hidden">
+      <div class="error-icon">⛈️</div>
+      <h2>Something went wrong</h2>
+      <p id="error-message">Could not fetch weather data. Please try again.</p>
+      <button id="retry-btn">Try Again</button>
+    </div>
+
+    <!-- Main Weather Content -->
+    <main id="weather-content" class="hidden">
+
+      <!-- Current Weather Hero -->
+      <section id="current-weather">
+        <div id="current-left">
+          <div id="current-location">
+            <svg class="pin-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+              <circle cx="12" cy="9" r="2.5"/>
+            </svg>
+            <h1 id="city-name">—</h1>
+          </div>
+          <p id="current-date">—</p>
+          <div id="current-temp-block">
+            <span id="current-temp">—</span>
+            <span id="current-unit">°C</span>
+          </div>
+          <p id="current-description">—</p>
+          <div id="current-hi-lo">
+            <span id="hi-temp">H: —°</span>
+            <span class="sep">·</span>
+            <span id="lo-temp">L: —°</span>
+          </div>
+        </div>
+        <div id="current-right">
+          <div id="weather-icon-large"></div>
+        </div>
+      </section>
+
+      <!-- Detail Cards -->
+      <section id="detail-cards">
+        <div class="detail-card" id="card-feels">
+          <div class="detail-label">Feels Like</div>
+          <div class="detail-value" id="feels-like">—°</div>
+        </div>
+        <div class="detail-card" id="card-humidity">
+          <div class="detail-label">Humidity</div>
+          <div class="detail-value" id="humidity">—%</div>
+          <div class="detail-bar"><div class="detail-bar-fill" id="humidity-bar"></div></div>
+        </div>
+        <div class="detail-card" id="card-wind">
+          <div class="detail-label">Wind</div>
+          <div class="detail-value" id="wind-speed">— km/h</div>
+          <div class="detail-sub" id="wind-dir">—</div>
+        </div>
+        <div class="detail-card" id="card-uv">
+          <div class="detail-label">UV Index</div>
+          <div class="detail-value" id="uv-index">—</div>
+          <div class="detail-sub" id="uv-label">—</div>
+        </div>
+        <div class="detail-card" id="card-visibility">
+          <div class="detail-label">Visibility</div>
+          <div class="detail-value" id="visibility">— km</div>
+        </div>
+        <div class="detail-card" id="card-pressure">
+          <div class="detail-label">Pressure</div>
+          <div class="detail-value" id="pressure">— hPa</div>
+        </div>
+      </section>
+
+      <!-- Hourly Forecast -->
+      <section id="hourly-section" class="forecast-section">
+        <h2 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Hourly Forecast
+        </h2>
+        <div id="hourly-scroll">
+          <div id="hourly-cards"></div>
+        </div>
+      </section>
+
+      <!-- 7-Day Forecast -->
+      <section id="daily-section" class="forecast-section">
+        <h2 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+          7-Day Forecast
+        </h2>
+        <div id="daily-cards"></div>
+      </section>
+
+      <!-- Sunrise/Sunset -->
+      <section id="sun-section" class="forecast-section">
+        <h2 class="section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          Sun &amp; Moon
+        </h2>
+        <div id="sun-cards">
+          <div class="sun-card">
+            <div class="sun-card-icon sunrise-icon">🌅</div>
+            <div class="sun-card-label">Sunrise</div>
+            <div class="sun-card-time" id="sunrise-time">—</div>
+          </div>
+          <div class="sun-card">
+            <div class="sun-card-icon sunset-icon">🌇</div>
+            <div class="sun-card-label">Sunset</div>
+            <div class="sun-card-time" id="sunset-time">—</div>
+          </div>
+          <div class="sun-card">
+            <div class="sun-card-icon">☀️</div>
+            <div class="sun-card-label">Daylight</div>
+            <div class="sun-card-time" id="daylight-time">—</div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer id="footer">
+      <p>Powered by <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> · No API key required · Free & open source</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
